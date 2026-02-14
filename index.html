@@ -27,7 +27,7 @@
             canvas.height = 128;
             context.fillStyle = 'rgba(0,0,0,0)';
             context.fillRect(0, 0, canvas.width, canvas.height);
-            context.font = 'Bold 80px Arial';
+            context.font = 'Bold 90px Arial';
             context.fillStyle = color;
             context.textAlign = 'center';
             context.textBaseline = 'middle';
@@ -51,27 +51,25 @@
         function getHeartPoint(t) {
             const x = 16 * Math.pow(Math.sin(t), 3);
             const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-            return new THREE.Vector3(x, y + 6, 0); // Added +6 to center it roughly
+            return new THREE.Vector3(x, y + 6, 0);
         }
 
-        // Create the 3D heart effect
-        const numHearts = 18;
-        const pointsPerHeart = 50;
+        // Create the 3D heart effect - Fewer instances for better visibility
+        const numHearts = 8;
+        const pointsPerHeart = 25;
 
         for (let i = 0; i < numHearts; i++) {
             const innerGroup = new THREE.Group();
-            // Rotate each heart outline around Y and X to create 3D volume
             innerGroup.rotation.y = (Math.PI * i) / numHearts;
-            innerGroup.rotation.x = (Math.PI * i) / (numHearts * 2);
+            innerGroup.rotation.x = (Math.PI * i) / (numHearts * 4);
 
             for (let j = 0; j < pointsPerHeart; j++) {
                 const t = (j / pointsPerHeart) * Math.PI * 2;
                 const pos = getHeartPoint(t);
 
-                const plane = new THREE.Mesh(new THREE.PlaneGeometry(8, 2), material);
+                const plane = new THREE.Mesh(new THREE.PlaneGeometry(12, 3), material);
                 plane.position.copy(pos);
 
-                // Orient the text to follow the curve
                 const tNext = ((j + 1) / pointsPerHeart) * Math.PI * 2;
                 const posNext = getHeartPoint(tNext);
                 const angle = Math.atan2(posNext.y - pos.y, posNext.x - pos.x);
@@ -84,11 +82,11 @@
 
         camera.position.z = 60;
 
-        // Animation
+        // Animation - Slower rotation
         function animate() {
             requestAnimationFrame(animate);
-            heartGroup.rotation.y += 0.015;
-            heartGroup.rotation.x += 0.007;
+            heartGroup.rotation.y += 0.005;
+            heartGroup.rotation.x += 0.002;
             renderer.render(scene, camera);
         }
 
