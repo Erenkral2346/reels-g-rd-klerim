@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>uzay kadetı</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const pinballGroup = new THREE.Group();
+        scene.add(pinballGroup);
+
+        // Table board with texture
+        const boardCanvas = document.createElement('canvas');
+        boardCanvas.width = 512;
+        boardCanvas.height = 1024;
+        const bCtx = boardCanvas.getContext('2d');
+        bCtx.fillStyle = '#050520';
+        bCtx.fillRect(0, 0, 512, 1024);
+
+        // Add some stars
+        for(let i=0; i<300; i++) {
+            const alpha = Math.random();
+            bCtx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+            bCtx.fillRect(Math.random()*512, Math.random()*1024, 1.5, 1.5);
+        }
+
+        // Circular patterns like in the image
+        bCtx.strokeStyle = '#4444ff';
+        bCtx.lineWidth = 3;
+        bCtx.beginPath();
+        bCtx.arc(256, 400, 120, 0, Math.PI*2);
+        bCtx.stroke();
+
+        bCtx.strokeStyle = '#ff00ff';
+        bCtx.beginPath();
+        bCtx.arc(256, 400, 150, 0, Math.PI*2);
+        bCtx.stroke();
+
+        const boardTex = new THREE.CanvasTexture(boardCanvas);
+        const boardGeometry = new THREE.BoxGeometry(30, 50, 2);
+        const boardMaterial = new THREE.MeshPhongMaterial({ map: boardTex });
+        const board = new THREE.Mesh(boardGeometry, boardMaterial);
+        board.rotation.x = -Math.PI / 6;
+        pinballGroup.add(board);
+
+        // Create texture for text
+        function createTextTexture(text, color) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 512;
+            canvas.height = 128;
+            context.fillStyle = 'rgba(0,0,0,0)';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.font = 'Bold 80px Arial';
+            context.fillStyle = color;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, canvas.width / 2, canvas.height / 2);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        const textTexture = createTextTexture('uzay kadetı', '#00ffff');
+        const textMaterial = new THREE.MeshBasicMaterial({
+            map: textTexture,
+            transparent: true,
+            side: THREE.DoubleSide
+        });
+        const textPlane = new THREE.Mesh(new THREE.PlaneGeometry(25, 6.25), textMaterial);
+        textPlane.position.set(0, 18, 1.1);
+        textPlane.rotation.x = -Math.PI / 6;
+        pinballGroup.add(textPlane);
+
+        // Bumpers
+        function createBumper(x, y, color) {
+            const geometry = new THREE.CylinderGeometry(1.8, 1.8, 2, 32);
+            const material = new THREE.MeshPhongMaterial({
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.8
+            });
+            const bumper = new THREE.Mesh(geometry, material);
+            bumper.position.set(x, y, 2);
+            bumper.rotation.x = Math.PI / 3;
+            pinballGroup.add(bumper);
+            return bumper;
+        }
+
+        createBumper(-6, 2, 0xff0000); // Red
+        createBumper(6, 2, 0xff0000);
+        createBumper(0, 8, 0xff0000);
+
+        // Flippers
+        function createFlipper(x, y, side) {
+            const geometry = new THREE.BoxGeometry(6, 1.5, 1);
+            const material = new THREE.MeshPhongMaterial({ color: 0xcccccc });
+            const flipper = new THREE.Mesh(geometry, material);
+            flipper.position.set(x, y, 1.5);
+            flipper.rotation.x = Math.PI / 3;
+            flipper.rotation.z = side * Math.PI / 4;
+            pinballGroup.add(flipper);
+        }
+
+        createFlipper(-5, -18, 1);
+        createFlipper(5, -18, -1);
+
+        // Ball
+        const ballGeometry = new THREE.SphereGeometry(1.2, 32, 32);
+        const ballMaterial = new THREE.MeshPhongMaterial({
+            color: 0xffffff,
+            specular: 0xffffff,
+            shininess: 100
+        });
+        const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+        ball.position.set(10, -5, 2.2);
+        pinballGroup.add(ball);
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0x808080);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1.2, 300);
+        pointLight.position.set(20, 20, 60);
+        scene.add(pointLight);
+
+        const bottomLight = new THREE.PointLight(0x6666ff, 2, 100);
+        bottomLight.position.set(0, -20, 20);
+        scene.add(bottomLight);
+
+        camera.position.z = 70;
+        camera.position.y = -5;
+        camera.lookAt(0, 0, 0);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            pinballGroup.rotation.y += 0.004; // Slow rotation
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
