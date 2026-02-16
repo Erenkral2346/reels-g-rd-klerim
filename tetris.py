@@ -185,6 +185,14 @@ def check_lost(positions):
 def get_shape():
     return Piece(5, 0, random.choice(SHAPES))
 
+def get_font(name, size, bold=False):
+    # Font listesi: Arial, DejaVu Sans, Liberation Sans, veya varsayılan
+    try:
+        font = pygame.font.SysFont([name, 'dejavusans', 'liberationsans', 'arial'], size, bold=bold)
+    except:
+        font = pygame.font.SysFont(None, size, bold=bold)
+    return font
+
 def clear_rows(grid, locked):
     full_rows = []
     for i in range(len(grid)-1, -1, -1):
@@ -230,13 +238,13 @@ def draw_window(surface, grid, score=0, last_score=0):
     surface.fill(BLACK)
 
     pygame.font.init()
-    font = pygame.font.SysFont('Arial', 60, bold=True)
+    font = get_font('Arial', 60, bold=True)
     label = font.render('TETRıS', 1, WHITE)
 
     surface.blit(label, (PLAY_WIDTH / 2 - (label.get_width() / 2), 10))
 
     # Current score
-    font = pygame.font.SysFont('Arial', 30)
+    font = get_font('Arial', 30)
     label = font.render('SKOR: ' + str(score), 1, WHITE)
 
     sx = PLAY_WIDTH + 50
@@ -253,7 +261,7 @@ def draw_window(surface, grid, score=0, last_score=0):
     pygame.draw.rect(surface, MAGENTA, (0, 0, PLAY_WIDTH, PLAY_HEIGHT), 3)
 
 def draw_next_shape(shape, surface):
-    font = pygame.font.SysFont('Arial', 30)
+    font = get_font('Arial', 30)
     label = font.render('SIRADAKı', 1, WHITE)
 
     sx = PLAY_WIDTH + 50
@@ -354,7 +362,7 @@ def main(win):
             return
 
 def draw_text_middle(surface, text, size, color):
-    font = pygame.font.SysFont('Arial', size, bold=True)
+    font = get_font('Arial', size, bold=True)
     label = font.render(text, 1, color)
 
     surface.blit(label, (PLAY_WIDTH / 2 - (label.get_width() / 2), PLAY_HEIGHT / 2 - (label.get_height() / 2)))
@@ -379,6 +387,10 @@ def main_menu(win):
         pygame.display.quit()
 
 if __name__ == '__main__':
-    win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption('Tetrıs')
-    main_menu(win)
+    try:
+        win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption('Tetrıs')
+        main_menu(win)
+    except Exception as e:
+        print(f"Hata oluştu: {e}")
+        pygame.quit()
